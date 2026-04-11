@@ -7,11 +7,97 @@
     <title>AI Article</title>
 </head>
 <body>
-    <h1>Hello, World!</h1>
-    <div class="container">
-        <p>This is a simple paragraph.</p>
-        <div class="bg-red-500">wowow</div>
-        <div class="bg-blue-300">wow</div>
+    <div class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-8">
+        <div class="max-w-2xl mx-auto">
+            <h1 class="text-4xl font-bold text-white mb-8">AI Article Generator</h1>
+            
+            <form id="articleForm" class="bg-slate-700 rounded-lg shadow-xl p-8 mb-8">
+                <div class="mb-6">
+                    <label for="title" class="block text-white font-semibold mb-2">Blog Title</label>
+                    <input 
+                        type="text" 
+                        id="title" 
+                        name="title" 
+                        placeholder="Enter the blog topic..." 
+                        class="w-full px-4 py-3 rounded-lg bg-slate-600 text-white placeholder-slate-400 border border-slate-500 focus:border-blue-400 focus:outline-none"
+                        required
+                    >
+                </div>
+                <button 
+                    type="submit" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200"
+                >
+                    Generate Article
+                </button>
+            </form>
+
+            <div id="result" class="hidden bg-slate-700 rounded-lg shadow-xl p-8 text-white">
+                <div id="resultContent" class="prose prose-invert max-w-none"></div>
+            </div>
+
+            <div id="loading" class="hidden text-center">
+                <div class="inline-block">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
+                    <p class="text-white mt-4 font-semibold">Generating your article...</p>
+                </div>
+            </div>
+
+            <div id="error" class="hidden bg-red-900 rounded-lg shadow-xl p-8 text-red-100 border border-red-700">
+                <h3 class="font-bold mb-2">Error</h3>
+                <p id="errorMessage"></p>
+            </div>
+        </div>
     </div>
+
+    <script>
+        const form = document.getElementById('articleForm');
+        const resultDiv = document.getElementById('result');
+        const resultContent = document.getElementById('resultContent');
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        const errorMessage = document.getElementById('errorMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value.trim();
+            
+            if (!title) {
+                alert('Please enter a blog title');
+                return;
+            }
+
+            // Reset UI
+            resultDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            loadingDiv.classList.remove('hidden');
+
+            try {
+                const formData = new FormData();
+                formData.append('title', title);
+
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const content = await response.text();
+                
+                // Display the content
+                resultContent.textContent = content;
+                resultDiv.classList.remove('hidden');
+                loadingDiv.classList.add('hidden');
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.textContent = error.message || 'Failed to generate article. Please try again.';
+                errorDiv.classList.remove('hidden');
+                loadingDiv.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
